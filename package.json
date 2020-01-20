@@ -1,0 +1,31 @@
+{
+  "name": "rasa_api",
+  "version": "1.0.0",
+  "description": "Api to communicate with rasa",
+  "main": "transpiled/index.js",
+  "scripts": {
+    "start": "nodemon transpiled/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "4.17.1",
+    "json2md": "^1.6.5",
+    "moment": "2.24.0",
+    "ramda": "0.26.1",
+    "request": "2.88.0",
+    "request-promise": "4.2.5"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "nodemon": "^2.0.2"
+  }
+}
