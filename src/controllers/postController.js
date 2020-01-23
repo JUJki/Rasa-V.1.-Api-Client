@@ -2,7 +2,7 @@ import json2md from 'json2md';
 import R from 'ramda';
 import {requester} from '../lib/requester';
 
-const reducerIntent = (origine, data) => {
+const _reducerIntent = (origine, data) => {
   if (origine[data.intent]) {
     origine[data.intent].push(data.text)
   } else {
@@ -10,51 +10,33 @@ const reducerIntent = (origine, data) => {
   }
   return origine;
 }
+
+const _dataCommonExample = data => R.pipe(
+  () => R.objOf,
+  R.assoc(['text'], R.prop('text', data)),
+  R.assoc(['intent'], R.prop('intent', data)),
+  R.assoc(['keywords'], []),
+)(data)
+
+const _getCommonExamples = data => R.pipe(
+  R.map(_dataCommonExample),
+)(data)
+
 const trainRasaModel = async (request, response) => {
-  const common_examples = [{
-    "text": "hey",
-    "intent": "greet",
-    "entities": []
-  }, {
-    "text": "yo",
-    "intent": "greet",
-    "entities": []
-  }, {
-    "text": "i'm looking for a place in the north of town",
-    "intent": "restaurant_search",
-    "entities": [
-      {
-        "start": 31,
-        "end": 36,
-        "value": "north",
-        "entity": "location"
-      }
-    ]
-  },
-    {
-      "text": "i'm looking for a place in the south of town",
-      "intent": "restaurant_search",
-      "entities": [
-        {
-          "start": 31,
-          "end": 36,
-          "value": "north",
-          "entity": "location"
-        }
-      ]
-    }];
+  const common_examples = _getCommonExamples(R.prop('validationSet', request.body));
   const regex_features = [];
   const lookup_tables = [];
   const entity_synonyms = [];
   const mdOptions = {
-    language: 'en',
+    language: R.path(['information', 'language'], request.body),
     pipeline: 'supervised_embeddings'
   }
-  const intentReduce = R.reduce(reducerIntent, {}, common_examples);
+  const intentReduce = R.reduce(_reducerIntent, {}, common_examples);
   const mdIntent = R.flatten(R.map(key => {
-      return [{
-        h2: R.concat("intent:", key)
-      },
+      return [
+        {
+          h2: R.concat("intent:", key)
+        },
         {
           ul: R.prop(key, intentReduce)
         }
@@ -69,7 +51,6 @@ const trainRasaModel = async (request, response) => {
   const queryParams = {
     project: request.body.project
   };
-
   const result = await requester('train', queryParams, body);
   response.setHeader('Content-Type', 'application/json');
   response.send(result);
@@ -128,7 +109,7 @@ const parseRasaModel = async (request, response) => {
       text: request.body.text,
     });
     response.setHeader('Content-Type', 'application/json');
-    if(result){
+    if (result) {
       response.send(result);
     } else {
       response.send(responseDefautlParse(request.body.text));
